@@ -30,14 +30,10 @@ class mainConversation extends Conversation
     }
     private function askWeather () {
         $question = Question::create("Тебе нравится погода на улице?");
-        $question->addButtons( [
-            Button::create('Да')->value(1),
-            Button::create('Нет')->value(2)
-        ]);
 
         $this->ask($question, function (Answer $answer) {
 
-            if($answer->getValue() == '1') {
+            if($answer->getText() === 'Да') {
                 $attachment = new Image('http://povodok.by/files/laughing_dog_2.jpg');
                 $message = OutgoingMessage::create('Мне тоже')
                     ->withAttachment($attachment);
