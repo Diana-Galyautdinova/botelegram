@@ -4,60 +4,64 @@ namespace App\Conversations;
 
 use App\messengerUser as database;
 use BotMan\BotMan\Messages\Attachments\Image;
-use BotMan\BotMan\Messages\Conversations\Conversation;
-use BotMan\BotMan\Messages\Incoming\Answer as BotManAnswer;
-use BotMan\BotMan\Messages\Outgoing\Actions\Button;
 use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
-use BotMan\BotMan\Messages\Outgoing\Question as BotManQuestion;
+use BotMan\BotMan\Messages\Incoming\Answer;
+use BotMan\BotMan\Messages\Outgoing\Question;
+use BotMan\BotMan\Messages\Outgoing\Actions\Button;
+use BotMan\BotMan\Messages\Conversations\Conversation;
 
-class mainConversation extends conversation
+class mainConversation extends Conversation
 {
-
-    protected $response = [];
+    public $response = [];
 
     public function run () {
-
         $this->setName();
     }
-
     private function setName() {
+        $question = Question::create("ĞŸÑ€Ğ¸Ğ²ĞµÑ‚! ĞšĞ°Ğº Ñ‚ĞµĞ±Ñ Ğ·Ğ¾Ğ²ÑƒÑ‚?");
 
-        //$question = BotManQuestion::create("Ïğèâåò! Êàê òåáÿ çîâóò?");
-        $this->ask( "Ïğèâåò! Êàê òåáÿ çîâóò?", function ( BotManAnswer $answer ) {
+        $this->ask( $question, function ( Answer $answer ) {
 
-            if( $answer->getText () !== '' ){
-
+            if( $answer->getText () != '' ){
                 array_push ($this->response, $answer->getText());
                 $this->askWeather ();
             }
         });
     }
-
     private function askWeather () {
-
-        $question = BotManQuestion::create("Òåáå íğàâèòñÿ ïîãîäà íà óëèöå?");
+        $question = Question::create("Ğ¢ĞµĞ±Ğµ Ğ½Ñ€Ğ°Ğ²Ğ¸Ñ‚ÑÑ Ğ¿Ğ¾Ğ³Ğ¾Ğ´Ğ° Ğ½Ğ° ÑƒĞ»Ğ¸Ñ†Ğµ?");
         $question->addButtons( [
-            Button::create('Äà')->value(1),
-            Button::create('Íåò')->value(2)
+            Button::create('Ğ”Ğ°')->value(1),
+            Button::create('ĞĞµÑ‚')->value(2)
         ]);
-        $this->ask($question, function (BotManAnswer $answer) {
-            // çäåñü ìîæíî óêàçàòü êàêèå ëèáî óñëîâèÿ, íî íàì ıòî íå íóæíî ñåé÷àñ
-            array_push ($this->response, $answer);
+
+        $this->ask($question, function (Answer $answer) {
+
+            if($answer->getValue() == '1') {
+                $attachment = new Image('http://povodok.by/files/laughing_dog_2.jpg');
+                $message = OutgoingMessage::create('ĞœĞ½Ğµ Ñ‚Ğ¾Ğ¶Ğµ')
+                    ->withAttachment($attachment);
+                $this->bot->reply($message);
+
+            } else {
+                $attachment = new Image('https://vgif.ru/gifs/155/vgif-ru-25820.gif');
+                $message = OutgoingMessage::create('Ğ–Ğ°Ğ»ÑŒ. Ğ¢Ğ¾Ğ³Ğ´Ğ° Ğ¿Ğ¾ÑĞ¼Ğ¾Ñ‚Ñ€Ğ¸, ĞºĞ°Ğº ÑĞ¾Ğ±Ğ°ĞºĞµ Ğ²ĞµÑĞµĞ»Ğ¾')
+                    ->withAttachment($attachment);
+                $this->bot->reply($message);
+            }
+
+            array_push($this->response, $answer);
             $this->exit();
         });
     }
-
     private function exit() {
-
         $db = new database();
         $db->id_chat = $this->bot->getUser()->getId();
         $db->name = $this->response[0];
         $db->response = $this->response[1];
         $db->save();
 
-        $attachment = new Image('/Users/adel/Documents/ilVEWt0TU3w.jpg');
-        $message = OutgoingMessage::create('Äî íîâûõ âñòğå÷!')
-            ->withAttachment($attachment);
+        $message = OutgoingMessage::create('Ğ”Ğ¾ Ğ½Ğ¾Ğ²Ñ‹Ñ… Ğ²ÑÑ‚Ñ€ĞµÑ‡!');
         $this->bot->reply($message);
 
         return true;
